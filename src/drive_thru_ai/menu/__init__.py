@@ -1,22 +1,26 @@
-from .base_item import BaseItem, Size
+"""
+Menu items and components
+"""
+
+from .base_item import BaseItem
 from .burger import Burger, IngredientAmount
-from .nuggets import Nuggets
-from .drinks import Drink, DrinkType, FountainFlavor, MilkshakeFlavor
+from .drinks import Drink, DrinkType, FountainFlavor, MilkshakeFlavor, Size
 from .fries import Fries
 from .meal import Meal
+from .nuggets import Nuggets
 from .order import Order
 
 __all__ = [
     'BaseItem',
-    'Size',
     'Burger',
-    'IngredientAmount',
-    'Nuggets',
     'Drink',
     'DrinkType',
     'FountainFlavor',
-    'MilkshakeFlavor',
     'Fries',
+    'IngredientAmount',
     'Meal',
+    'MilkshakeFlavor',
+    'Nuggets',
     'Order',
+    'Size'
 ]

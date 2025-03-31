@@ -55,9 +55,11 @@ class Burger(BaseItem):
         ingredients_desc = []
         for ingredient, amount in self.ingredients.items():
             if amount != IngredientAmount.NONE:
-                ingredients_desc.append(f"{amount.value} {ingredient}")
+                if amount == IngredientAmount.NORMAL:
+                    ingredients_desc.append(ingredient)
+                else:
+                    ingredients_desc.append(f"{amount.value} {ingredient}")
         return desc + ", ".join(ingredients_desc)
 
     def get_image(self) -> str:
         return "https://via.placeholder.com/150?text=Burger"
-
