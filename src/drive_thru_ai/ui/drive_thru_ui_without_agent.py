@@ -2,7 +2,6 @@ import streamlit as st
 from drive_thru_ai.menu import *
 
 
-
 def get_drink_customization(key_prefix=""):
     """Helper function to get drink customization options"""
     drink_type = st.selectbox(

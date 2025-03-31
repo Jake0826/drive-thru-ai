@@ -1,0 +1,138 @@
+{
+  "menu_items": {
+    "burgers": {
+      "basic_burger": {
+        "name": "Basic Burger",
+        "base_price": 5.99,
+        "description": "A classic single-patty burger with lettuce, tomato, onion, and cheese",
+        "customizable_ingredients": {
+          "patty": [
+            "single",
+            "double"
+          ],
+          "cheese": [
+            "none",
+            "single",
+            "double"
+          ],
+          "lettuce": [
+            "none",
+            "light",
+            "regular"
+          ],
+          "onion": [
+            "none",
+            "light",
+            "regular"
+          ],
+          "tomato": [
+            "none",
+            "light",
+            "regular"
+          ]
+        }
+      }
+    },
+    "nuggets": {
+      "available_counts": [
+        4,
+        6,
+        10,
+        20
+      ],
+      "base_price_per_piece": 0.50,
+      "description": "Crispy chicken nuggets served with your choice of sauce"
+    },
+    "drinks": {
+      "fountain_drinks": {
+        "available_sizes": [
+          "small",
+          "medium",
+          "large"
+        ],
+        "base_prices": {
+          "small": 1.99,
+          "medium": 2.49,
+          "large": 2.99
+        },
+        "available_flavors": [
+          "coke",
+          "diet_coke",
+          "sprite",
+          "dr_pepper",
+          "root_beer"
+        ]
+      },
+      "milkshakes": {
+        "available_sizes": [
+          "small",
+          "medium",
+          "large"
+        ],
+        "base_prices": {
+          "small": 3.99,
+          "medium": 4.49,
+          "large": 4.99
+        },
+        "available_flavors": [
+          "vanilla",
+          "chocolate",
+          "strawberry",
+          "caramel"
+        ]
+      }
+    },
+    "fries": {
+      "available_sizes": [
+        "small",
+        "medium",
+        "large"
+      ],
+      "base_prices": {
+        "small": 1.99,
+        "medium": 2.49,
+        "large": 2.99
+      },
+      "description": "Crispy golden fries with just the right amount of salt"
+    },
+    "meals": {
+      "burger_meal": {
+        "name": "Burger Meal",
+        "includes": {
+          "main_item": "basic_burger",
+          "drink": {
+            "type": "fountain_drinks",
+            "size": "medium",
+            "flavor": "coke"
+          },
+          "fries": {
+            "size": "medium"
+          }
+        },
+        "price_discount": 1.00
+      },
+      "nuggets_meal": {
+        "name": "Nuggets Meal",
+        "includes": {
+          "main_item": "nuggets",
+          "count": 10,
+          "drink": {
+            "type": "fountain_drinks",
+            "size": "medium",
+            "flavor": "coke"
+          },
+          "fries": {
+            "size": "medium"
+          }
+        },
+        "price_discount": 1.00
+      }
+    }
+  },
+  "conversation_prompts": {
+    "greeting": "Welcome to our drive-thru! How can I help you today?",
+    "order_confirmation": "Great! I've got your order. Here's what I understood: {order_summary}. Is that correct?",
+    "order_modification": "What would you like to change about your order?",
+    "order_completion": "Perfect! Your total comes to ${total}. Please pull up to the first window to pay. Thank you for choosing our drive-thru!"
+  }
+}
