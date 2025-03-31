@@ -18,5 +18,5 @@ __all__ = [
     'MilkshakeFlavor',
     'Fries',
     'Meal',
-    'Order'
+    'Order',
 ]
