@@ -1,6 +1,7 @@
 import streamlit as st
 import os
-from drive_thru_ai.agent.ai_agent import DriveThruAgent
+from drive_thru_ai.agent.simple_agent import SimpleDriveThruAgent
+from collections import Counter
 
 
 def show_drive_thru():
@@ -13,7 +14,7 @@ def show_drive_thru():
         if not api_key:
             st.error("Please set the OPENAI_API_KEY environment variable")
             return
-        st.session_state.agent = DriveThruAgent()
+        st.session_state.agent = SimpleDriveThruAgent()
 
     # Initialize chat history
     if 'messages' not in st.session_state:
@@ -43,11 +44,22 @@ def show_drive_thru():
         st.header("Order Summary")
         current_order = st.session_state.agent.get_current_order()
         if current_order:
-            for item in current_order:
-                st.write(
-                    f"- {item.get_description()}: ${item.get_price():.2f}")
+            # Create a counter for item descriptions
+            item_counts = Counter(item.get_description()
+                                  for item in current_order)
+
+            # Display items with their quantities
+            for description, count in item_counts.items():
+                item_price = next(item.get_price(
+                ) for item in current_order if item.get_description() == description)
+                if count > 1:
+                    st.write(
+                        f"- {count}x {description}: ${item_price * count:.2f}")
+                else:
+                    st.write(f"- {description}: ${item_price:.2f}")
+
             st.write(
-                f"**Total: ${st.session_state.agent.get_order_total(current_order):.2f}**")
+                f"**Total: ${st.session_state.agent.get_order_total():.2f}**")
         else:
             st.write("No items in order yet")
 

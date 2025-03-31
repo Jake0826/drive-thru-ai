@@ -4,44 +4,65 @@
       "basic_burger": {
         "name": "Basic Burger",
         "base_price": 5.99,
-        "description": "A classic single-patty burger with lettuce, tomato, onion, and cheese",
+        "description": "A classic burger with customizable ingredients",
         "customizable_ingredients": {
           "patty": [
-            "single",
+            "none",
+            "light",
+            "normal",
             "double"
           ],
           "cheese": [
             "none",
-            "single",
+            "light",
+            "normal",
             "double"
           ],
           "lettuce": [
             "none",
             "light",
-            "regular"
+            "normal",
+            "double"
           ],
           "onion": [
             "none",
             "light",
-            "regular"
+            "normal",
+            "double"
           ],
           "tomato": [
             "none",
             "light",
-            "regular"
+            "normal",
+            "double"
+          ],
+          "pickles": [
+            "none",
+            "light",
+            "normal",
+            "double"
+          ],
+          "sauce": [
+            "none",
+            "light",
+            "normal",
+            "double"
           ]
         }
       }
     },
     "nuggets": {
       "available_counts": [
-        4,
         6,
         10,
         20
       ],
-      "base_price_per_piece": 0.50,
-      "description": "Crispy chicken nuggets served with your choice of sauce"
+      "prices": {
+        "6": 3.99,
+        "10": 5.99,
+        "20": 9.99
+      },
+      "description": "Crispy chicken nuggets"
     },
     "drinks": {
       "fountain_drinks": {
@@ -57,10 +78,7 @@
         },
         "available_flavors": [
           "coke",
-          "diet_coke",
-          "sprite",
-          "dr_pepper",
-          "root_beer"
+          "diet_coke"
         ]
       },
       "milkshakes": {
@@ -77,8 +95,7 @@
         "available_flavors": [
           "vanilla",
           "chocolate",
-          "strawberry",
-          "caramel"
+          "strawberry"
         ]
       }
     },
@@ -93,7 +110,7 @@
         "medium": 2.49,
         "large": 2.99
       },
-      "description": "Crispy golden fries with just the right amount of salt"
+      "description": "Crispy golden fries"
     },
     "meals": {
       "burger_meal": {
@@ -109,7 +126,17 @@
             "size": "medium"
           }
         },
-        "price_discount": 1.00
+        "price_discount": 1.00,
+        "validation_rules": {
+          "drink_size": [
+            "medium",
+            "large"
+          ],
+          "fries_size": [
+            "medium",
+            "large"
+          ]
+        }
       },
       "nuggets_meal": {
         "name": "Nuggets Meal",
@@ -125,7 +152,17 @@
             "size": "medium"
           }
         },
-        "price_discount": 1.00
+        "price_discount": 1.00,
+        "validation_rules": {
+          "drink_size": [
+            "medium",
+            "large"
+          ],
+          "fries_size": [
+            "medium",
+            "large"
+          ]
+        }
       }
     }
   },
