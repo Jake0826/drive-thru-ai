@@ -7,6 +7,10 @@ setup(
     packages=find_packages(where="src"),
     install_requires=[
         "streamlit",
+        "pyaudio",
+        "wave",
+        "elevenlabs",
+        "python-dotenv",
     ],
     python_requires=">=3.10",
     author="Jake Silver",

@@ -1,10 +1,18 @@
-from drive_thru_ai.menu import Fries, Drink, DrinkType, FountainFlavor, MilkshakeFlavor, Size
 import json
 import os
 from typing import Dict, List, Optional
-from openai import OpenAI
 import logging
+from io import BytesIO
+import time
+import threading
+from openai import OpenAI
+from elevenlabs import VoiceSettings
+from elevenlabs.client import ElevenLabs
 
+# Import menu items from your package
+from drive_thru_ai.menu import Fries, Drink, DrinkType, FountainFlavor, MilkshakeFlavor, Size
+
+# Configure logging
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -12,12 +20,45 @@ logging.basicConfig(level=logging.INFO,
 class SimpleDriveThruAgent:
     def __init__(self):
         """Initialize the AI agent with OpenAI API key."""
-        api_key = os.getenv('OPENAI_API_KEY')
-        if not api_key:
-            raise ValueError("OPENAI_API_KEY environment variable is not set.")
+        # Initialize API clients
+        self.openai_client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+        self.elevenlabs_client = ElevenLabs(
+            api_key=os.getenv('ELEVENLABS_API_KEY'))
 
-        self.client = OpenAI(api_key=api_key)
+        # Initialize order tracking
         self.current_order = []
+        
+        # Initialize audio playback flag
+        self.is_playing_audio = False
+        self.audio_lock = threading.Lock()
+
+    def text_to_speech_stream(self, text: str) -> BytesIO:
+        """Convert text to speech and return audio stream."""
+        try:
+            response = self.elevenlabs_client.text_to_speech.convert(
+                voice_id="3l9iCMrNSRR0w51JvFB0",
+                output_format="mp3_22050_32",
+                text=text,
+                model_id="eleven_flash_v2_5",
+                voice_settings=VoiceSettings(
+                    stability=0.0,
+                    similarity_boost=1.0,
+                    style=0.0,
+                    use_speaker_boost=True,
+                    speed=1.0,
+                ),
+            )
+
+            audio_stream = BytesIO()
+            for chunk in response:
+                if chunk:
+                    audio_stream.write(chunk)
+
+            audio_stream.seek(0)
+            return audio_stream
+        except Exception as e:
+            logging.error(f"Error in text_to_speech_stream: {e}")
+            return None
 
     def _create_system_prompt(self) -> str:
         """Create the system prompt for the AI."""
@@ -56,42 +97,58 @@ class SimpleDriveThruAgent:
         5. If no quantity is specified, assume quantity of 1
         """
 
-    def process_customer_input(self, customer_input: str) -> str:
-        """Process customer input and generate appropriate response."""
+    def process_customer_input(self, customer_input: str, recorder=None) -> str:
+        """Process customer input and generate appropriate response.
+        
+        Args:
+            customer_input: The customer's input text
+            recorder: Optional AudioRecorder instance for feedback loop prevention
+        """
         # Create messages for OpenAI API
         messages = [
             {"role": "system", "content": self._create_system_prompt()},
             {"role": "user", "content": customer_input}
         ]
 
-        # Get response from OpenAI
-        response = self.client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=messages,
-            temperature=0.7,  # Increased for more natural responses
-            max_tokens=500
-        )
-
-        # Extract the response
-        ai_response = response.choices[0].message.content
-
-        # Log the AI response
-        logging.info(f"AI Response: {ai_response}")
-
-        # Parse the order from the response
         try:
-            order_json = self._extract_json_from_response(ai_response)
-            if order_json:
-                self._process_order_json(order_json)
-        except Exception as e:
-            logging.error(f"Error processing order: {e}")
+            # Get response from OpenAI
+            response = self.openai_client.chat.completions.create(
+                model="gpt-3.5-turbo",
+                messages=messages,
+                temperature=0.7,
+                max_tokens=500
+            )
 
-        # Strip out the JSON part before returning to user
-        json_start = ai_response.find('{')
-        if json_start != -1:
-            # Return everything before the JSON starts
-            return ai_response[:json_start].strip()
-        return ai_response
+            # Extract the response
+            ai_response = response.choices[0].message.content
+
+            # Log the AI response
+            logging.info(f"AI Response: {ai_response}")
+
+            # Parse the order from the response
+            try:
+                order_json = self._extract_json_from_response(ai_response)
+                if order_json:
+                    self._process_order_json(order_json)
+            except Exception as e:
+                logging.error(f"Error processing order: {e}")
+
+            # Strip out the JSON part before returning to user
+            json_start = ai_response.find('{')
+            if json_start != -1:
+                user_response = ai_response[:json_start].strip()
+            else:
+                user_response = ai_response.strip()
+            
+            # Store the response in the recorder for feedback loop prevention
+            if recorder is not None:
+                recorder.set_last_system_response(user_response)
+
+            return user_response
+            
+        except Exception as e:
+            logging.error(f"Error in process_customer_input: {e}")
+            return "I'm sorry, I couldn't process your order. Could you please repeat that?"
 
     def _extract_json_from_response(self, response: str) -> Optional[Dict]:
         """Extract JSON from the AI response."""
@@ -195,3 +252,47 @@ class SimpleDriveThruAgent:
     def get_order_total(self) -> float:
         """Calculate the total price of the current order."""
         return sum(item.get_price() for item in self.current_order)
+
+    def play_audio(self, audio_stream: BytesIO, recorder=None):
+        """Play the audio stream with proper initialization and completion handling.
+        
+        Args:
+            audio_stream: The audio stream to play
+            recorder: Optional AudioRecorder instance to notify about playback
+        """
+        if audio_stream is None:
+            logging.error("Cannot play None audio stream")
+            return
+            
+        with self.audio_lock:
+            self.is_playing_audio = True
+        
+        # Notify recorder if provided
+        if recorder:
+            recorder.is_system_speaking = True
+            
+        try:
+            import pygame
+            if not pygame.mixer.get_init():
+                pygame.mixer.init()
+                
+            pygame.mixer.music.load(audio_stream)
+            pygame.mixer.music.play()
+            
+            # Wait for playback to finish
+            while pygame.mixer.music.get_busy():
+                time.sleep(0.1)
+                
+            # Add cooldown after playback finishes
+            if recorder:
+                time.sleep(recorder.cooldown_period)
+                
+        except Exception as e:
+            logging.error(f"Error playing audio: {e}")
+        finally:
+            with self.audio_lock:
+                self.is_playing_audio = False
+            
+            # Reset recorder flag after playback
+            if recorder:
+                recorder.is_system_speaking = False
