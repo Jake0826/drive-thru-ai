@@ -1,3 +1,5 @@
+Note: I realized that talking to an AI live is much more nuanced than simply adding input and output audio to GPT's API, so I abandoned this approach in favor of using OpenAI's real-time voice agents.
+
 # Drive-thru AI Documentation
 
 An AI agent that takes your orders, also for me to practice building a coding project with Cursor
