@@ -4,9 +4,9 @@ A Next.js application that demonstrates an AI-powered McDonald's drive-thru orde
 
 ## Demo
 
-Watch our demo video to see the drive-thru ordering system in action:
+<video src="demo.mp4" width="640" height="360" controls></video>
 
-![Demo Video](demo.mp4)
+
 
 ## Features
 
