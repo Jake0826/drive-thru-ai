@@ -8,6 +8,10 @@ https://raw.githubusercontent.com/Jake0826/drive-thru-ai/openai-realtime-agents/
 
 <video src="https://raw.githubusercontent.com/Jake0826/drive-thru-ai/openai-realtime-agents/demo.mp4" width="640" height="360" controls></video>
 <video src="demo.mp4" width="640" height="360" controls></video>
+
+![](demo.mp4)
+![](https://raw.githubusercontent.com/Jake0826/drive-thru-ai/openai-realtime-agents/demo.mp4)
+
 ## Features
 
 - **AI-Powered Drive-Thru Ordering**: Experience a realistic McDonald's drive-thru ordering system with natural conversation
