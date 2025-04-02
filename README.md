@@ -1,26 +1,22 @@
-# OpenAI Realtime Agents
+# McDonald's Drive-Thru AI Ordering System
 
-A Next.js application that demonstrates real-time agent interactions using OpenAI's API. This is a fork of the original [Realtime API Agents Demo](https://github.com/openai/swarm) that maintains all original functionality while adding a new fast food ordering system. 100% of the code I wrote was written by AI.
+A Next.js application that demonstrates an AI-powered McDonald's drive-thru ordering system. This project is a fork of the original [Realtime API Agents Demo](https://github.com/openai/swarm) that maintains all original functionality while adding a new fast food ordering system. 100% of the code I wrote was written by AI.
 
 ## Demo
 
-Watch our demo video to see the application in action:
+Watch our demo video to see the drive-thru ordering system in action:
 
-[![Demo Video](https://img.shields.io/badge/Demo-Video-blue)](demo.mp4)
+https://github.com/yourusername/openai-realtime-agents/assets/youruserid/demo.mp4
 
 ## Features
 
-- All original features from the base project:
-  - Sequential agent handoffs according to a defined agent graph
-  - Background escalation to more intelligent models
-  - State machine-based prompting for accurate data collection
-  - Voice activity detection and PTT modes
-  - Comprehensive event logging
-- New Fast Food Ordering System:
-  - Fast Food Order Agent: Helps customers order from a menu with items like French Fries, Chicken Nuggets, and Drinks
-  - Interactive menu display with categories and items
-  - Real-time order tracking and total calculation
-  - Responsive UI with collapsible sidebar
+- **AI-Powered Drive-Thru Ordering**: Experience a realistic McDonald's drive-thru ordering system with natural conversation
+- **Interactive Menu Display**: Browse the menu with categories and items in a responsive sidebar
+- **Real-time Order Tracking**: See your order update in real-time as you speak with the AI
+- **Voice Interaction**: Talk naturally with the AI using voice or text input
+- **Push-to-Talk Mode**: Optional push-to-talk functionality for clearer communication
+- **Order Management**: Add, remove, or modify items in your order with ease
+- **Total Calculation**: Automatic calculation of order totals as you build your meal
 
 ## Getting Started
 
@@ -39,9 +35,9 @@ Watch our demo video to see the application in action:
    ```
 5. Open [http://localhost:3000](http://localhost:3000) in your browser
 
-## Fast Food Menu
+## Menu Items
 
-The application includes a fast food menu with the following items:
+The application includes a McDonald's-style menu with the following items:
 
 ### Food
 - French Fries
@@ -66,12 +62,14 @@ The application includes a fast food menu with the following items:
 ## Original Project Features
 
 This fork maintains all the original functionality from the base project, including:
+- Sequential agent handoffs according to a defined agent graph
+- Background escalation to more intelligent models
+- State machine-based prompting for accurate data collection
+- Voice activity detection and PTT modes
+- Comprehensive event logging
 - Multiple agent scenarios (front desk authentication, customer service retail)
-- Voice interaction capabilities
-- Real-time event logging
 - Agent transfer capabilities
 - Background model escalation
-- State machine-based prompting
 
 For more details about the original project's features and configuration, please refer to the [original repository](https://github.com/openai/swarm).
 
