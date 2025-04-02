@@ -4,11 +4,8 @@ A Next.js application that demonstrates an AI-powered McDonald's drive-thru orde
 
 ## Demo
 
-<video src="demo.mp4" width="640" height="360" controls></video>
+https://raw.githubusercontent.com/Jake0826/drive-thru-ai/openai-realtime-agents/demo.mp4
 
-https://github.com/Jake0826/drive-thru-ai/blob/openai-realtime-agents/demo.mp4
-
-<video src="https://raw.githubusercontent.com/Jake0826/drive-thru-ai/openai-realtime-agents/demo.mp4" width="640" height="360" controls></video>
 ## Features
 
 - **AI-Powered Drive-Thru Ordering**: Experience a realistic McDonald's drive-thru ordering system with natural conversation
