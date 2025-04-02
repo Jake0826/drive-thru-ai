@@ -15,6 +15,46 @@ interface OrderContext {
   total: number;
 }
 
+// Helper function to find the closest matching item ID
+function findClosestItemId(inputId: string): string | null {
+  // Direct match
+  if (menuItems.some(item => item.id === inputId)) {
+    return inputId;
+  }
+
+  // Normalize input (remove spaces, convert to lowercase)
+  const normalizedInput = inputId.toLowerCase().replace(/\s+/g, '-');
+
+  // Try to find a match
+  const match = menuItems.find(item =>
+    item.id === normalizedInput ||
+    item.id.includes(normalizedInput) ||
+    normalizedInput.includes(item.id)
+  );
+
+  return match ? match.id : null;
+}
+
+// Helper function to find the closest matching option ID
+function findClosestOptionId(menuItem: MenuItem | DrinkItem, inputOptionId: string): string | null {
+  // Direct match
+  if (menuItem.options.some(opt => opt.id === inputOptionId)) {
+    return inputOptionId;
+  }
+
+  // Normalize input (remove spaces, convert to lowercase)
+  const normalizedInput = inputOptionId.toLowerCase().replace(/\s+/g, '-');
+
+  // Try to find a match
+  const match = menuItem.options.find(opt =>
+    opt.id === normalizedInput ||
+    opt.id.includes(normalizedInput) ||
+    normalizedInput.includes(opt.id)
+  );
+
+  return match ? match.id : null;
+}
+
 const orderAgent: AgentConfig = {
   name: "orderAgent",
   publicDescription: "A friendly fast food order taker that helps customers order from our menu.",
@@ -54,7 +94,7 @@ Minimal use of filler words - you're clear and concise.
 Medium pace - clear enough to understand but efficient.
 
 # Steps
-1. Greet the customer warmly
+1. Greet the customer warmly with "Welcome to McDonald's! How can I help you today?"
 2. Ask what they'd like to order
 3. For each item:
    - Confirm the item and size
@@ -81,6 +121,18 @@ The order context should be updated in this format:
 - If a customer wants to remove an item, update the order context with the remaining items
 - If a customer wants to modify an item, update the order context with the modified item
 - Keep track of the current order total and ensure it matches the sum of all items
+- IMPORTANT: Use the EXACT item IDs from the menu:
+  - For Chicken Nuggets: use "chicken-nuggets" (not "chicken-nuggets-6")
+  - For French Fries: use "french-fries"
+  - For Milkshakes: use "milkshakes"
+  - For Sodas: use "sodas"
+- For options, use the EXACT option IDs:
+  - For sizes: "small", "medium", "large"
+  - For nugget quantities: "6-piece", "10-piece", "20-piece"
+  - For milkshake flavors: "chocolate", "vanilla", "strawberry"
+  - For soda types: "coke", "diet-coke"
+- If you encounter an error with an item ID or option ID, try to find the closest match
+- Always verify the current order state before making changes
 `,
   tools: [
     {
@@ -163,14 +215,38 @@ The order context should be updated in this format:
 
       // Validate each item against the actual menu
       const validatedItems = orderContext.items.map((orderItem: OrderItem) => {
-        const menuItem = menuItems.find(item => item.id === orderItem.itemId);
+        // Try to find the correct item ID
+        let menuItem = menuItems.find(item => item.id === orderItem.itemId);
+
+        // If not found, try to find the closest match
         if (!menuItem) {
-          throw new Error(`Invalid item ID: ${orderItem.itemId}`);
+          const closestId = findClosestItemId(orderItem.itemId);
+          if (closestId) {
+            menuItem = menuItems.find(item => item.id === closestId);
+            console.log(`Corrected item ID from "${orderItem.itemId}" to "${closestId}"`);
+          }
         }
 
-        const option = menuItem.options.find(opt => opt.id === orderItem.selectedOptionId);
+        if (!menuItem) {
+          console.error(`Invalid item ID: ${orderItem.itemId}. Valid IDs are: ${menuItems.map(item => item.id).join(', ')}`);
+          throw new Error(`Invalid item ID: ${orderItem.itemId}. Valid IDs are: ${menuItems.map(item => item.id).join(', ')}`);
+        }
+
+        // Try to find the correct option ID
+        let option = menuItem.options.find(opt => opt.id === orderItem.selectedOptionId);
+
+        // If not found, try to find the closest match
         if (!option) {
-          throw new Error(`Invalid option ID: ${orderItem.selectedOptionId} for item: ${menuItem.name}`);
+          const closestOptionId = findClosestOptionId(menuItem, orderItem.selectedOptionId);
+          if (closestOptionId) {
+            option = menuItem.options.find(opt => opt.id === closestOptionId);
+            console.log(`Corrected option ID from "${orderItem.selectedOptionId}" to "${closestOptionId}" for item "${menuItem.name}"`);
+          }
+        }
+
+        if (!option) {
+          console.error(`Invalid option ID: ${orderItem.selectedOptionId} for item: ${menuItem.name}. Valid options are: ${menuItem.options.map(opt => opt.id).join(', ')}`);
+          throw new Error(`Invalid option ID: ${orderItem.selectedOptionId} for item: ${menuItem.name}. Valid options are: ${menuItem.options.map(opt => opt.id).join(', ')}`);
         }
 
         const correctPrice = menuItem.basePrice + option.priceModifier;

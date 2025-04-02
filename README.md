@@ -2,6 +2,12 @@
 
 A Next.js application that demonstrates real-time agent interactions using OpenAI's API. This is a fork of the original [Realtime API Agents Demo](https://github.com/openai/swarm) that maintains all original functionality while adding a new fast food ordering system. 100% of the code I wrote was written by AI.
 
+## Demo
+
+Watch our demo video to see the application in action:
+
+[![Demo Video](https://img.shields.io/badge/Demo-Video-blue)](demo.mp4)
+
 ## Features
 
 - All original features from the base project:
