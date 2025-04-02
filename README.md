@@ -7,7 +7,7 @@ A Next.js application that demonstrates an AI-powered McDonald's drive-thru orde
 https://raw.githubusercontent.com/Jake0826/drive-thru-ai/openai-realtime-agents/demo.mp4
 
 <video src="https://raw.githubusercontent.com/Jake0826/drive-thru-ai/openai-realtime-agents/demo.mp4" width="640" height="360" controls></video>
-<video src="demo.mp4" width="640" height="360" controls></video>
+<video src="https://github.com/user-attachments/assets/957bd44b-42c9-4e77-b42c-231f011908f3" width="640" height="360" controls></video>
 
 ![](demo.mp4)
 ![](https://raw.githubusercontent.com/Jake0826/drive-thru-ai/openai-realtime-agents/demo.mp4)
