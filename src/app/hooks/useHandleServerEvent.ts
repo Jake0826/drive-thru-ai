@@ -3,7 +3,9 @@
 import { ServerEvent, SessionStatus, AgentConfig } from "@/app/types";
 import { useTranscript } from "@/app/contexts/TranscriptContext";
 import { useEvent } from "@/app/contexts/EventContext";
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
+import { menuItems } from '@/app/data/menu';
+import { Order } from '@/app/types/order';
 
 export interface UseHandleServerEventParams {
   setSessionStatus: (status: SessionStatus) => void;
@@ -11,6 +13,7 @@ export interface UseHandleServerEventParams {
   selectedAgentConfigSet: AgentConfig[] | null;
   sendClientEvent: (eventObj: any, eventNameSuffix?: string) => void;
   setSelectedAgentName: (name: string) => void;
+  setOrderContext: (context: any) => void;
   shouldForceResponse?: boolean;
 }
 
@@ -20,6 +23,7 @@ export function useHandleServerEvent({
   selectedAgentConfigSet,
   sendClientEvent,
   setSelectedAgentName,
+  setOrderContext,
 }: UseHandleServerEventParams) {
   const {
     transcriptItems,
@@ -50,6 +54,10 @@ export function useHandleServerEvent({
         `function call result: ${functionCallParams.name}`,
         fnResult
       );
+
+      if (functionCallParams.name === "updateOrderContext") {
+        setOrderContext(args.orderContext);
+      }
 
       sendClientEvent({
         type: "conversation.item.create",
@@ -110,8 +118,7 @@ export function useHandleServerEvent({
         if (serverEvent.session?.id) {
           setSessionStatus("CONNECTED");
           addTranscriptBreadcrumb(
-            `session.id: ${
-              serverEvent.session.id
+            `session.id: ${serverEvent.session.id
             }\nStarted at: ${new Date().toLocaleString()}`
           );
         }
@@ -194,6 +201,32 @@ export function useHandleServerEvent({
 
   const handleServerEventRef = useRef(handleServerEvent);
   handleServerEventRef.current = handleServerEvent;
+
+  useEffect(() => {
+    const handleServerEvent = (event: MessageEvent) => {
+      const data = event.data;
+
+      if (data.type === 'session_status') {
+        setSessionStatus(data.status);
+      } else if (data.type === 'agent_selected') {
+        setSelectedAgentName(data.agentName);
+      } else if (data.type === 'order_context') {
+        const newOrder = new Order();
+        if (data.context.items) {
+          data.context.items.forEach((item: any) => {
+            const menuItem = menuItems.find(mi => mi.id === item.itemId);
+            if (menuItem) {
+              newOrder.addItem(menuItem, item.selectedOptionId);
+            }
+          });
+        }
+        setOrderContext(newOrder);
+      }
+    };
+
+    window.addEventListener('message', handleServerEvent);
+    return () => window.removeEventListener('message', handleServerEvent);
+  }, [setSessionStatus, setSelectedAgentName, setOrderContext]);
 
   return handleServerEventRef;
 }

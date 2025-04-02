@@ -8,7 +8,7 @@ export async function createRealtimeConnection(
 
   pc.ontrack = (e) => {
     if (audioElement.current) {
-        audioElement.current.srcObject = e.streams[0];
+      audioElement.current.srcObject = e.streams[0];
     }
   };
 

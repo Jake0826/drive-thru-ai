@@ -28,6 +28,7 @@ export interface Tool {
 export interface AgentConfig {
   name: string;
   publicDescription: string; // gives context to agent transfer tool
+  model?: string;
   instructions: string;
   tools: Tool[];
   toolLogic?: Record<

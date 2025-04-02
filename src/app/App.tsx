@@ -10,9 +10,13 @@ import Image from "next/image";
 import Transcript from "./components/Transcript";
 import Events from "./components/Events";
 import BottomToolbar from "./components/BottomToolbar";
+import OrderContext from "./components/OrderContext";
+import Menu from './components/Menu';
 
 // Types
 import { AgentConfig, SessionStatus } from "@/app/types";
+import { Order, OrderItem } from './types/order';
+import { MenuItem, DrinkItem } from "@/app/types/menu";
 
 // Context providers & hooks
 import { useTranscript } from "@/app/contexts/TranscriptContext";
@@ -23,7 +27,10 @@ import { useHandleServerEvent } from "./hooks/useHandleServerEvent";
 import { createRealtimeConnection } from "./lib/realtimeConnection";
 
 // Agent configs
-import { allAgentSets, defaultAgentSetKey } from "@/app/agentConfigs";
+import { allAgentSets } from "@/app/agentConfigs";
+import { menuItems } from "@/app/data/menu";
+
+const defaultAgentSetKey = "fastFood";
 
 function App() {
   const searchParams = useSearchParams();
@@ -51,6 +58,8 @@ function App() {
   const [isAudioPlaybackEnabled, setIsAudioPlaybackEnabled] =
     useState<boolean>(true);
 
+  const [order, setOrder] = useState<Order>(new Order());
+
   const sendClientEvent = (eventObj: any, eventNameSuffix = "") => {
     if (dcRef.current && dcRef.current.readyState === "open") {
       logClientEvent(eventObj, eventNameSuffix);
@@ -73,6 +82,7 @@ function App() {
     selectedAgentConfigSet,
     sendClientEvent,
     setSelectedAgentName,
+    setOrderContext: setOrder,
   });
 
   useEffect(() => {
@@ -235,12 +245,12 @@ function App() {
     const turnDetection = isPTTActive
       ? null
       : {
-          type: "server_vad",
-          threshold: 0.5,
-          prefix_padding_ms: 300,
-          silence_duration_ms: 200,
-          create_response: true,
-        };
+        type: "server_vad",
+        threshold: 0.5,
+        prefix_padding_ms: 300,
+        silence_duration_ms: 200,
+        create_response: true,
+      };
 
     const instructions = currentAgent?.instructions || "";
     const tools = currentAgent?.tools || [];
@@ -250,7 +260,7 @@ function App() {
       session: {
         modalities: ["text", "audio"],
         instructions,
-        voice: "coral",
+        voice: "sage",
         input_audio_format: "pcm16",
         output_audio_format: "pcm16",
         input_audio_transcription: { model: "whisper-1" },
@@ -403,113 +413,112 @@ function App() {
 
   const agentSetKey = searchParams.get("agentConfig") || "default";
 
+  const handleOrderUpdate = (updatedOrder: Order) => {
+    setOrder(updatedOrder);
+  };
+
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data.type === 'order_context') {
+        const { items, total } = event.data.context;
+        const newOrder = new Order();
+        items.forEach((item: OrderItem) => {
+          const menuItem = menuItems.find((mi: MenuItem | DrinkItem) => mi.id === item.itemId);
+          if (menuItem) {
+            newOrder.addItem(menuItem, item.selectedOptionId);
+          }
+        });
+        setOrder(newOrder);
+      } else if (event.data.type === 'get_current_order') {
+        // Send current order state back to the agent
+        window.postMessage({
+          type: 'current_order',
+          order: order.toJSON()
+        }, '*');
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, [order]);
+
   return (
-    <div className="text-base flex flex-col h-screen bg-gray-100 text-gray-800 relative">
-      <div className="p-5 text-lg font-semibold flex justify-between items-center">
-        <div className="flex items-center">
-          <div onClick={() => window.location.reload()} style={{ cursor: 'pointer' }}>
-            <Image
-              src="/openai-logomark.svg"
-              alt="OpenAI Logo"
-              width={20}
-              height={20}
-              className="mr-2"
-            />
-          </div>
-          <div>
-            Realtime API <span className="text-gray-500">Agents</span>
-          </div>
-        </div>
-        <div className="flex items-center">
-          <label className="flex items-center text-base gap-1 mr-2 font-medium">
-            Scenario
-          </label>
-          <div className="relative inline-block">
-            <select
-              value={agentSetKey}
-              onChange={handleAgentChange}
-              className="appearance-none border border-gray-300 rounded-lg text-base px-2 py-1 pr-8 cursor-pointer font-normal focus:outline-none"
-            >
-              {Object.keys(allAgentSets).map((agentKey) => (
-                <option key={agentKey} value={agentKey}>
-                  {agentKey}
-                </option>
-              ))}
-            </select>
-            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 text-gray-600">
-              <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                <path
-                  fillRule="evenodd"
-                  d="M5.23 7.21a.75.75 0 011.06.02L10 10.44l3.71-3.21a.75.75 0 111.04 1.08l-4.25 3.65a.75.75 0 01-1.04 0L5.21 8.27a.75.75 0 01.02-1.06z"
-                  clipRule="evenodd"
-                />
-              </svg>
+    <div className="flex h-screen bg-gray-100">
+      <div className="flex-1 flex flex-col">
+        <div className="p-5 text-lg font-semibold flex justify-between items-center">
+          <div className="flex items-center">
+            <div onClick={() => window.location.reload()} style={{ cursor: 'pointer' }}>
+              <Image
+                src="/openai-logomark.svg"
+                alt="OpenAI Logo"
+                width={20}
+                height={20}
+                className="mr-2"
+              />
+            </div>
+            <div>
+              Realtime API <span className="text-gray-500">Agents</span>
             </div>
           </div>
-
-          {agentSetKey && (
-            <div className="flex items-center ml-6">
-              <label className="flex items-center text-base gap-1 mr-2 font-medium">
-                Agent
-              </label>
-              <div className="relative inline-block">
-                <select
-                  value={selectedAgentName}
-                  onChange={handleSelectedAgentChange}
-                  className="appearance-none border border-gray-300 rounded-lg text-base px-2 py-1 pr-8 cursor-pointer font-normal focus:outline-none"
-                >
-                  {selectedAgentConfigSet?.map(agent => (
-                    <option key={agent.name} value={agent.name}>
-                      {agent.name}
-                    </option>
-                  ))}
-                </select>
-                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 text-gray-600">
-                  <svg
-                    className="h-4 w-4"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M5.23 7.21a.75.75 0 011.06.02L10 10.44l3.71-3.21a.75.75 0 111.04 1.08l-4.25 3.65a.75.75 0 01-1.04 0L5.21 8.27a.75.75 0 01.02-1.06z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </div>
+          <div className="flex items-center">
+            <label className="flex items-center text-base gap-1 mr-2 font-medium">
+              Scenario
+            </label>
+            <div className="relative inline-block">
+              <select
+                value={agentSetKey}
+                onChange={handleAgentChange}
+                className="appearance-none border border-gray-300 rounded-lg text-base px-2 py-1 pr-8 cursor-pointer font-normal focus:outline-none"
+              >
+                {Object.keys(allAgentSets).map((agentKey) => (
+                  <option key={agentKey} value={agentKey}>
+                    {agentKey}
+                  </option>
+                ))}
+              </select>
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 text-gray-600">
+                <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                  <path
+                    fillRule="evenodd"
+                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                    clipRule="evenodd"
+                  />
+                </svg>
               </div>
             </div>
-          )}
+          </div>
         </div>
-      </div>
 
-      <div className="flex flex-1 gap-2 px-2 overflow-hidden relative">
-        <Transcript
-          userText={userText}
-          setUserText={setUserText}
-          onSendMessage={handleSendTextMessage}
-          canSend={
-            sessionStatus === "CONNECTED" &&
-            dcRef.current?.readyState === "open"
-          }
+        <div className="flex-1 overflow-y-auto p-4">
+          <Transcript
+            userText={userText}
+            setUserText={setUserText}
+            onSendMessage={handleSendTextMessage}
+            canSend={
+              sessionStatus === "CONNECTED" &&
+              dcRef.current?.readyState === "open"
+            }
+          />
+
+          <Events isExpanded={isEventsPaneExpanded} />
+        </div>
+
+        <BottomToolbar
+          sessionStatus={sessionStatus}
+          onToggleConnection={onToggleConnection}
+          isPTTActive={isPTTActive}
+          setIsPTTActive={setIsPTTActive}
+          isPTTUserSpeaking={isPTTUserSpeaking}
+          handleTalkButtonDown={handleTalkButtonDown}
+          handleTalkButtonUp={handleTalkButtonUp}
+          isEventsPaneExpanded={isEventsPaneExpanded}
+          setIsEventsPaneExpanded={setIsEventsPaneExpanded}
+          isAudioPlaybackEnabled={isAudioPlaybackEnabled}
+          setIsAudioPlaybackEnabled={setIsAudioPlaybackEnabled}
         />
-
-        <Events isExpanded={isEventsPaneExpanded} />
       </div>
 
-      <BottomToolbar
-        sessionStatus={sessionStatus}
-        onToggleConnection={onToggleConnection}
-        isPTTActive={isPTTActive}
-        setIsPTTActive={setIsPTTActive}
-        isPTTUserSpeaking={isPTTUserSpeaking}
-        handleTalkButtonDown={handleTalkButtonDown}
-        handleTalkButtonUp={handleTalkButtonUp}
-        isEventsPaneExpanded={isEventsPaneExpanded}
-        setIsEventsPaneExpanded={setIsEventsPaneExpanded}
-        isAudioPlaybackEnabled={isAudioPlaybackEnabled}
-        setIsAudioPlaybackEnabled={setIsAudioPlaybackEnabled}
-      />
+      <Menu order={order} onOrderUpdate={handleOrderUpdate} />
     </div>
   );
 }
