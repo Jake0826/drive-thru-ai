@@ -1,6 +1,6 @@
 # OpenAI Realtime Agents
 
-A Next.js application that demonstrates real-time agent interactions using OpenAI's API. This is a fork of the original [Realtime API Agents Demo](https://github.com/openai/swarm) that maintains all original functionality while adding a new fast food ordering system.
+A Next.js application that demonstrates real-time agent interactions using OpenAI's API. This is a fork of the original [Realtime API Agents Demo](https://github.com/openai/swarm) that maintains all original functionality while adding a new fast food ordering system. 100% of the code I wrote was written by AI.
 
 ## Features
 
