@@ -1,6 +1,6 @@
 # McDonald's Drive-Thru AI Ordering System
 
-Taking drive-thru orders outside with the tablet was lowkey my favorite job when I worked at McDonald's. Being outside was definitely less stressful than running around the kitchen. I wonder how much better an AI agent would be. This project is a fork of [Realtime API Agents Demo](https://github.com/openai/swarm). 100% of the code I wrote was written by AI.
+Taking drive-thru orders outside with the tablet was my favorite job when I worked at McDonald's. Being outside was definitely less stressful than running around the kitchen. I wonder how much better an AI agent would be. This project is a fork of [Realtime API Agents Demo](https://github.com/openai/swarm). 100% of the code I wrote was written by AI.
 
 ## Demo
 
